@@ -6,9 +6,7 @@ Use it for complex feature work, multi-file refactors, architecture changes, dat
 
 ## Installation
 
-```bash
-npx skills add ZhouZyv/riper-5-skill
-```
+riper-5 ships in the [skills repo](https://github.com/ZhouZyv/skills). Install via Claude Code plugin (`claude plugin install zhouzyv-skills`) or `npx skills add ZhouZyv/skills`, then pick `riper-5`.
 
 ## When to Use
 

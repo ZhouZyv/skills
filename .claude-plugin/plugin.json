@@ -1,0 +1,22 @@
+{
+  "name": "zhouzyv-skills",
+  "version": "0.1.0",
+  "description": "Zyv Zhou's personal agent skills — tech-doc-writer（客观技术文档）、calm-dev-writer（冷静工程师发布版写作）、riper-5（五阶段开发工作流）。",
+  "author": {
+    "name": "Zyv Zhou",
+    "url": "https://github.com/ZhouZyv"
+  },
+  "repository": "https://github.com/ZhouZyv/skills",
+  "keywords": [
+    "skills",
+    "writing",
+    "documentation",
+    "workflow",
+    "riper"
+  ],
+  "skills": [
+    "./skills/tech-doc-writer",
+    "./skills/calm-dev-writer",
+    "./skills/riper-5"
+  ]
+}

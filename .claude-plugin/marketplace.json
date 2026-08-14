@@ -1,0 +1,23 @@
+{
+  "name": "zhouzyv",
+  "owner": {
+    "name": "Zyv Zhou",
+    "url": "https://github.com/ZhouZyv"
+  },
+  "description": "Zyv Zhou's personal skills as an installable Claude Code plugin.",
+  "plugins": [
+    {
+      "name": "zhouzyv-skills",
+      "source": "./",
+      "description": "Zyv Zhou's agent skills — tech-doc-writer、calm-dev-writer、riper-5",
+      "category": "skills",
+      "keywords": [
+        "skills",
+        "writing",
+        "documentation",
+        "workflow",
+        "riper"
+      ]
+    }
+  ]
+}

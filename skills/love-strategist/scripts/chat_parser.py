@@ -1,12 +1,18 @@
 #!/usr/bin/env python3
-"""聊天记录预处理工具（零第三方依赖）。
+"""聊天记录预处理工具（零第三方依赖，平台无关）。
 
 用法：
   python3 chat_parser.py --file 聊天.json [--sample 12] [--output 报告.md]
 
 输入格式：
-- JSON：wechat-parse 导出格式 {talker, wxid, messages:[{t, sender, type, content}]}
-        wxid 字段即对方的 wxid，脚本据此自动区分「对方」和「我」
+- JSON：任意聊天导出。自动探测常见字段名——
+        时间：t / time / timestamp / date / datetime（支持多种格式与 epoch）
+        内容：content / text / message / msg
+        发送者：sender / from / user / name / talker / speaker / role
+        消息数组：messages / msgs / items / list / data（顶层为数组亦可）
+        「我 / 对方」识别：顶层 me|self|owner|my_name 等标记 >
+        is_me 布尔字段 > wechat-parse 元数据（wxid/talker）。
+        均无法识别时按说话人分列统计，不强行锚定。
 - TXT：每行聊天导出，支持 "[2024-01-01 12:00:00] 名字: 内容" 等常见格式（尽力解析）
 """
 
@@ -23,8 +29,66 @@ REPLY_WINDOW = 30 * 60              # 30 分钟内的说话人切换才算回复
 EMOJI_RE = re.compile(
     "[\U0001F300-\U0001FAFF\U00002700-\U000027BF\U0001F000-\U0001F0FF\U00002600-\U000026FF\U0001F900-\U0001F9FF]"
 )
-TONE_WORDS = ["哈哈哈", "哈哈", "笑死", "绝了", "无语", "好的", "嗯嗯", "哦哦",
-              "666", "拜拜", "晚安", "早安", "宝贝", "亲爱", "想你", "爱你", "么么"]
+
+# 语气词/风格词表可经 --patterns JSON 覆盖（适配其他语言与平台）
+DEFAULT_PATTERNS = {
+    "tone_words": ["哈哈哈", "哈哈", "笑死", "绝了", "无语", "好的", "嗯嗯", "哦哦",
+                   "666", "拜拜", "晚安", "早安", "宝贝", "亲爱", "想你", "爱你", "么么"],
+}
+
+TIME_KEYS = ("t", "time", "timestamp", "date", "datetime", "send_time", "created_at")
+CONTENT_KEYS = ("content", "text", "message", "msg", "body")
+SENDER_KEYS = ("sender", "from", "user", "name", "talker", "speaker", "author")
+MSG_LIST_KEYS = ("messages", "msgs", "items", "list", "data", "records")
+TYPE_KEYS = ("type", "msg_type", "message_type", "kind")
+ME_KEYS = ("me", "self", "owner", "my_name", "my_wxid", "self_wxid", "my", "self_name")
+
+TIME_FORMATS = (
+    "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M",
+    "%Y/%m/%d %H:%M:%S", "%Y/%m/%d %H:%M",
+    "%Y-%m-%dT%H:%M:%S", "%Y年%m月%d日 %H:%M:%S", "%Y年%m月%d日 %H:%M",
+)
+
+
+def _parse_dt(v):
+    if v is None:
+        return None
+    if isinstance(v, (int, float)):
+        if v > 1e12:
+            v = v / 1000
+        try:
+            return datetime.fromtimestamp(v)
+        except (OSError, ValueError, OverflowError):
+            return None
+    s = str(v).strip()
+    for fmt in TIME_FORMATS:
+        try:
+            return datetime.strptime(s, fmt)
+        except ValueError:
+            continue
+    try:
+        return datetime.fromisoformat(s.replace("Z", "+00:00")).replace(tzinfo=None)
+    except ValueError:
+        return None
+
+
+def _first(m, keys):
+    for k in keys:
+        if m.get(k) not in (None, ""):
+            return m[k]
+    return None
+
+
+def load_patterns(path):
+    """加载 --patterns JSON，浅合并覆盖默认词表。"""
+    patterns = {k: list(v) for k, v in DEFAULT_PATTERNS.items()}
+    if not path:
+        return patterns
+    with open(path, encoding="utf-8") as f:
+        for k, v in json.load(f).items():
+            if isinstance(v, list):
+                patterns[k] = [str(x) for x in v]
+    return patterns
 
 
 # ---------------------------------------------------------------- 聊天解析
@@ -36,31 +100,78 @@ def parse_chat(path):
     text = raw.decode("utf-8", errors="replace")
     stripped = text.lstrip()
     if stripped.startswith("{") or stripped.startswith("["):
-        return parse_wechat_json(text)
+        try:
+            return parse_chat_json(text)
+        except json.JSONDecodeError:
+            pass  # 以 [ 开头的纯文本聊天导出，回落到文本解析
     return parse_plain_text(text)
 
 
-def parse_wechat_json(text):
+def parse_chat_json(text):
+    """解析任意平台聊天导出 JSON。字段名自动探测，wechat-parse 导出完全兼容。"""
     data = json.loads(text)
-    peer_wxid = data.get("wxid", "")
-    peer_name = data.get("talker", peer_wxid or "对方")
+    if isinstance(data, list):
+        raw_msgs, meta_src = data, {}
+    else:
+        raw_msgs = None
+        for k in MSG_LIST_KEYS:
+            if isinstance(data.get(k), list):
+                raw_msgs = data[k]
+                break
+        if raw_msgs is None:
+            for v in data.values():
+                if isinstance(v, list) and v and isinstance(v[0], dict):
+                    raw_msgs = v
+                    break
+        meta_src = data if isinstance(data, dict) else {}
+    if raw_msgs is None:
+        raise SystemExit(
+            "JSON 中未找到消息数组（支持 messages/msgs/items/list/data 键，或顶层数组）"
+        )
+
     msgs = []
-    for m in data.get("messages", []):
-        try:
-            dt = datetime.strptime(m["t"], "%Y-%m-%d %H:%M:%S")
-        except (KeyError, ValueError):
+    for m in raw_msgs:
+        if not isinstance(m, dict):
             continue
-        sender_wxid = m.get("sender", "")
-        sender = peer_name if sender_wxid == peer_wxid and peer_wxid else (sender_wxid or "未知")
+        dt = _parse_dt(_first(m, TIME_KEYS))
+        if dt is None:
+            continue
         msgs.append({
             "dt": dt,
-            "sender": sender,
-            "type": m.get("type", "文本"),
-            "content": (m.get("content") or "").strip(),
+            "sender": str(_first(m, SENDER_KEYS) or "未知").strip(),
+            "type": str(_first(m, TYPE_KEYS) or "文本"),
+            "content": str(_first(m, CONTENT_KEYS) or "").strip(),
+            "_is_me": m.get("is_me", m.get("is_self", m.get("from_me"))),
         })
     msgs.sort(key=lambda x: x["dt"])
-    meta = {"peer": peer_name, "me_hint": "另一个说话人"}
-    return msgs, meta
+    senders = [s for s, _ in Counter(m["sender"] for m in msgs).most_common()]
+
+    # 「我 / 对方」识别：显式标记 > is_me 字段 > wechat-parse 元数据；都不行则不锚定
+    me, peer = None, None
+    for k in ME_KEYS:
+        v = meta_src.get(k)
+        if isinstance(v, str) and v:
+            me = v
+            break
+    if me is None:
+        me = next((m["sender"] for m in msgs if m.pop("_is_me", None) is True), None)
+    else:
+        for m in msgs:
+            m.pop("_is_me", None)
+
+    wxid = meta_src.get("wxid")
+    if me:
+        peer = next((s for s in senders if s != me), None)
+    elif wxid:
+        # wechat-parse：wxid 即对方，消息里 sender 为 wxid；匹配上的显示为对方昵称
+        peer = meta_src.get("talker") or wxid
+        for m in msgs:
+            if m["sender"] == wxid:
+                m["sender"] = peer
+    if peer is None:
+        peer = None  # 不锚定：报告按说话人分列，由使用者代入
+
+    return msgs, {"peer": peer, "me": me}
 
 
 def parse_plain_text(text):
@@ -99,7 +210,8 @@ def _clean_display(content, limit=90):
     return content.replace("|", "\\|").replace("\n", " ")[:limit]
 
 
-def analyze_chat(msgs, meta, sample_n):
+def analyze_chat(msgs, meta, sample_n, patterns=None):
+    patterns = patterns or DEFAULT_PATTERNS
     out = []
     n = len(msgs)
     if n == 0:
@@ -110,9 +222,12 @@ def analyze_chat(msgs, meta, sample_n):
     for m in msgs:
         chars[m["sender"]] += len(m["content"])
 
-    peer = meta["peer"]
+    peer = meta.get("peer")
     out.append(f"## 聊天总览\n")
     out.append(f"- 消息总数：{n} 条，时间跨度：{span}")
+    if peer is None:
+        out.append("- 注意：未能自动识别「我 / 对方」（缺少 me/self 标记或 wechat-parse 元数据），"
+                   "以下统计按说话人分列，请自行代入双方身份")
     out.append(f"- 说话人分布：" + "；".join(
         f"**{s}** {c} 条（{c / n:.0%}，{chars[s]} 字）" for s, c in senders.most_common(6)))
 
@@ -121,11 +236,19 @@ def analyze_chat(msgs, meta, sample_n):
 
     # 小时分布
     hour_all = Counter(m["dt"].hour for m in msgs)
-    hour_peer = Counter(m["dt"].hour for m in msgs if m["sender"] == peer)
     late_all = sum(v for h, v in hour_all.items() if h < 6)
-    late_peer = sum(v for h, v in hour_peer.items() if h < 6)
-    out.append(f"- 深夜消息（0-6 点）：全部 {late_all} 条；{peer} {late_peer} 条"
-               + (f"（占其消息 {late_peer / max(1, senders[peer]):.0%}）" if senders[peer] else ""))
+    late_line = f"- 深夜消息（0-6 点）：全部 {late_all} 条"
+    if peer:
+        hour_peer = Counter(m["dt"].hour for m in msgs if m["sender"] == peer)
+        late_peer = sum(v for h, v in hour_peer.items() if h < 6)
+        late_line += f"；{peer} {late_peer} 条" + (
+            f"（占其消息 {late_peer / max(1, senders[peer]):.0%}）" if senders[peer] else "")
+    else:
+        for s, _ in senders.most_common(2):
+            hour_s = Counter(m["dt"].hour for m in msgs if m["sender"] == s)
+            late_s = sum(v for h, v in hour_s.items() if h < 6)
+            late_line += f"；{s} {late_s} 条（占其消息 {late_s / max(1, senders[s]):.0%}）"
+    out.append(late_line)
 
     # 会话发起
     sessions, cur = [], [msgs[0]]
@@ -165,7 +288,7 @@ def analyze_chat(msgs, meta, sample_n):
     tones = Counter()
     for m in msgs:
         emoji.update(EMOJI_RE.findall(m["content"]))
-        for tw in TONE_WORDS:
+        for tw in patterns.get("tone_words", []):
             if tw in m["content"]:
                 tones[tw] += m["content"].count(tw)
     if emoji:
@@ -241,8 +364,9 @@ def _sample(msgs, n, window=18):
 # ---------------------------------------------------------------- 主流程
 
 def main():
-    ap = argparse.ArgumentParser(description="聊天记录预处理")
-    ap.add_argument("--file", help="聊天记录文件（wechat-parse JSON 或 txt）")
+    ap = argparse.ArgumentParser(description="聊天记录预处理（平台无关）")
+    ap.add_argument("--file", help="聊天记录文件（任意平台导出的 JSON 或 txt）")
+    ap.add_argument("--patterns", help="词表覆盖 JSON（tone_words 等），适配其他语言/平台")
     ap.add_argument("--sample", type=int, default=12, help="对话采样段数（默认 12）")
     ap.add_argument("--output", help="报告输出路径（默认 stdout）")
     args = ap.parse_args()
@@ -250,9 +374,11 @@ def main():
     if not args.file:
         ap.error("需要提供 --file")
 
+    patterns = load_patterns(args.patterns)
     msgs, meta = parse_chat(args.file)
-    report, _ = analyze_chat(msgs, meta, args.sample)
-    result = f"# 聊天记录分析报告：{meta['peer']}\n\n{report}"
+    report, _ = analyze_chat(msgs, meta, args.sample, patterns)
+    title = meta.get("peer") or "（未识别双方身份）"
+    result = f"# 聊天记录分析报告：{title}\n\n{report}"
     if args.output:
         with open(args.output, "w", encoding="utf-8") as f:
             f.write(result)

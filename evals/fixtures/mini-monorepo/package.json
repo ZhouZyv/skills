@@ -1,0 +1,20 @@
+{
+  "name": "taskman",
+  "private": true,
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "test": "vitest run",
+    "lint": "eslint packages/*/src",
+    "typecheck": "tsc -b --noEmit",
+    "check": "pnpm typecheck && pnpm lint && pnpm test"
+  },
+  "devDependencies": {
+    "eslint": "^9.10.0",
+    "typescript": "^5.6.2",
+    "vitest": "^2.1.1"
+  }
+}

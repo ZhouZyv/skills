@@ -2,17 +2,19 @@
 
 [English](README.en.md) | 中文
 
-个人 agent skill 仓库，通过 Claude Code plugin 分发，也可直接复制或软链到本机使用。包含三个 skill：客观技术文档、发布版写作、五阶段开发工作流。
+个人 agent skill 仓库，通过 Claude Code plugin 分发，也可直接复制或软链到本机使用。包含五个 skill：客观技术文档、发布版写作、五阶段开发工作流、恋爱军师、律师。
 
 ## Skills
 
-三个 skill 的定位与边界：
+五个 skill 的定位与边界：
 
 | Skill | 作用 | 什么时候用 |
 |-------|------|-----------|
 | [tech-doc-writer](skills/tech-doc-writer/SKILL.md) | 把原始素材整理成客观、准确、可复现的技术文档（工程/架构/原理/流程/协议均可） | 有代码库/笔记/素材，想沉淀成一份像样的技术文档 |
 | [calm-dev-writer](skills/calm-dev-writer/SKILL.md) | 把技术文档改写成面向读者的发布版 | 想发到公众号/知乎/博客，要带判断和风格 |
 | [riper-5](skills/riper-5/SKILL.md) | 五阶段开发工作流：Research → Diverge → Plan → Execute → Review | 复杂功能、重构、架构变更，动手前要计划 |
+| [love-strategist](skills/love-strategist/SKILL.md) | 分析聊天记录，判断关系阶段、解读好感信号、给推进策略与贴合风格的话术 | 追/暧昧/约会话题，"怎么回ta"、"ta对我什么意思" |
+| [legal-advisor](skills/legal-advisor/SKILL.md) | 通用法律咨询 + 聊天记录/转账账单证据分析，给法条依据与维权路径 | 借贷/合同/劳动/消费/婚姻等纠纷，"这钱能不能要回来" |
 
 **tech-doc-writer 和 calm-dev-writer 是一条流水线**：前者产出客观文档（不带观点、只陈述事实与原理），后者把它改写成发布版（带判断、带温度、带克制反讽）。纯知识沉淀用 tech-doc-writer，可发布的文章用 calm-dev-writer，两者不可混用。
 
@@ -27,6 +29,14 @@
 ### riper-5
 
 五阶段开发工作流：Research → Diverge → Plan → Execute → Review，每阶段需用户确认后才推进。面向复杂功能、多模块重构、架构变更；单行修复、简单问答直接处理，不必走完整流程。遇到信息缺失或外部依赖不可用时暂停并说明，不猜测、不绕过。
+
+### love-strategist
+
+恋爱军师：从聊天记录中提取真实信号（统计 + 原文细读），判断关系阶段、解读好感信号、构建对方画像，给出推进策略与贴合对方聊天风格的话术。证据先行，节奏信号驱动；拒绝操纵式套路，对方明确拒绝时如实建议停止。支持 wechat-parse 导出 JSON 与纯文本，带纯标准库预处理脚本，档案存 `./chat-intel/`。
+
+### legal-advisor
+
+律师：通用法律咨询与纠纷证据分析。从聊天记录与支付账单中提取证据线索、定性法律关系（借贷/赠与/不当得利）、整理证据清单、给出分步维权路径，条文号必须来自检索否则标注待核实；输出含免责声明。支持 wechat-parse 导出 JSON 与微信账单 xlsx/csv，带纯标准库预处理脚本，档案存 `./legal-cases/`。
 
 ## 安装
 
@@ -68,7 +78,9 @@ skills/
 └── skills/
     ├── tech-doc-writer/SKILL.md
     ├── calm-dev-writer/SKILL.md
-    └── riper-5/SKILL.md
+    ├── riper-5/SKILL.md
+    ├── love-strategist/SKILL.md
+    └── legal-advisor/SKILL.md
 ```
 
 ## 维护

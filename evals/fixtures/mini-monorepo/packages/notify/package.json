@@ -1,0 +1,10 @@
+{
+  "name": "@taskman/notify",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "devDependencies": {
+    "typescript": "^5.6.2"
+  }
+}

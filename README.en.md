@@ -16,7 +16,7 @@ Positioning and boundaries of the five skills:
 | [calm-dev-writer](skills/calm-dev-writer/SKILL.md) | Rewrites a technical doc into a reader-facing publication with clear judgment and voice | You want to publish to a blog/WeChat/Zhihu, with opinions and style |
 | [riper-5](skills/riper-5/SKILL.md) | Five-phase development workflow: Research → Diverge → Plan → Execute → Review | Complex features, refactors, architecture changes — plan before you build |
 | [love-strategist](skills/love-strategist/SKILL.md) | Reads chat history to gauge relationship stage and signals, then gives progression strategy and style-matched messages | Dating/crush topics: "how do I reply", "is she into me" |
-| [legal-advisor](skills/legal-advisor/SKILL.md) | General legal Q&A plus evidence analysis from chat/payment records, with statute citations and action paths | Disputes (loans, contracts, labor, consumer): "can I get the money back" |
+| [legal-advisor](skills/legal-advisor/SKILL.md) | General legal Q&A plus evidence analysis from chat/payment records, with statute citations and action paths | Disputes (loans, contracts, labor, consumer): "the company owes me wages", "how do I sue" |
 
 **tech-doc-writer and calm-dev-writer are one pipeline**: the former produces an objective document (no opinions, just facts and principles), the latter rewrites it for readers (with judgment, warmth, and dry humor). Use tech-doc-writer for pure knowledge; use calm-dev-writer for publishable articles. Don't mix the two.
 

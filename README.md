@@ -14,7 +14,7 @@
 | [calm-dev-writer](skills/calm-dev-writer/SKILL.md) | 把技术文档改写成面向读者的发布版 | 想发到公众号/知乎/博客，要带判断和风格 |
 | [riper-5](skills/riper-5/SKILL.md) | 五阶段开发工作流：Research → Diverge → Plan → Execute → Review | 复杂功能、重构、架构变更，动手前要计划 |
 | [love-strategist](skills/love-strategist/SKILL.md) | 分析聊天记录，判断关系阶段、解读好感信号、给推进策略与贴合风格的话术 | 追/暧昧/约会话题，"怎么回ta"、"ta对我什么意思" |
-| [legal-advisor](skills/legal-advisor/SKILL.md) | 通用法律咨询 + 聊天记录/转账账单证据分析，给法条依据与维权路径 | 借贷/合同/劳动/消费/婚姻等纠纷，"这钱能不能要回来" |
+| [legal-advisor](skills/legal-advisor/SKILL.md) | 通用法律咨询 + 聊天记录/转账账单证据分析，给法条依据与维权路径 | 借贷/合同/劳动/消费/婚姻等纠纷，"公司拖欠工资怎么办"、"怎么告ta" |
 
 **tech-doc-writer 和 calm-dev-writer 是一条流水线**：前者产出客观文档（不带观点、只陈述事实与原理），后者把它改写成发布版（带判断、带温度、带克制反讽）。纯知识沉淀用 tech-doc-writer，可发布的文章用 calm-dev-writer，两者不可混用。
 

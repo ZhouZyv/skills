@@ -1,0 +1,6 @@
+{
+  "money_words": ["transfer", "loan", "owe", "pay back", "sent you", "lent"],
+  "amount_units": ["dollars", "dollar", "usd", "bucks"],
+  "shop_words": ["amazon", "ebay"],
+  "tone_words": ["lol", "lmao", "haha", "omg"]
+}

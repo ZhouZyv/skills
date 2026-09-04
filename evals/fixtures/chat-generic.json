@@ -1,0 +1,15 @@
+{
+  "title": "Telegram export (generic format)",
+  "messages": [
+    {"timestamp": "2026-07-06 19:02:11", "from": "Alex", "text": "看了一张摄影展的照片，特别像你说过的那片海", "is_me": true},
+    {"timestamp": "2026-07-06 19:15:40", "from": "Jordan", "text": "哈哈哈是吗，拍来看看"},
+    {"timestamp": "2026-07-06 19:20:33", "from": "Jordan", "text": "绝了，这张构图好舒服"},
+    {"timestamp": "2026-07-08 00:47:20", "from": "Jordan", "text": "睡了吗"},
+    {"timestamp": "2026-07-08 00:50:37", "from": "Jordan", "text": "刚加完班，地铁上，突然有点emo"},
+    {"timestamp": "2026-07-08 01:05:33", "from": "Jordan", "text": "谢谢你，跟你聊完好多了"},
+    {"timestamp": "2026-07-10 21:15:22", "from": "Alex", "text": "那是，表情包界的卷王"},
+    {"timestamp": "2026-07-12 15:41:05", "from": "Jordan", "text": "下周六可以吗，下周就轻松了"},
+    {"timestamp": "2026-07-18 12:35:40", "from": "Jordan", "text": "那个展真的值得来，谢谢你的安利"},
+    {"timestamp": "2026-07-27 21:15:22", "from": "Jordan", "text": "对！你听出来了"}
+  ]
+}

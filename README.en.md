@@ -34,11 +34,11 @@ A five-phase development workflow: Research → Diverge → Plan → Execute →
 
 ### love-strategist
 
-A dating strategist: extracts real signals from chat history (statistics plus close reading), gauges relationship stage, reads attraction signals, builds a profile of the other person, and proposes progression strategy with messages matched to their texting style. Evidence first; pacing follows signals, not calendars. Refuses manipulative tactics, and honestly advises stopping when the other person has clearly said no. Supports wechat-parse JSON exports and plain text, with a stdlib-only preprocessing script; case files live in `./chat-intel/`.
+A dating strategist: extracts real signals from chat history (statistics plus close reading), gauges relationship stage, reads attraction signals, builds a profile of the other person, and proposes progression strategy with messages matched to their texting style. Evidence first; pacing follows signals, not calendars. Refuses manipulative tactics, and honestly advises stopping when the other person has clearly said no. Works with chat exports from any platform (JSON with auto-detected fields, or plain text), with a stdlib-only preprocessing script; case files live in `./chat-intel/`.
 
 ### legal-advisor
 
-A legal advisor: general legal consultation and dispute evidence analysis. Extracts evidence from chat records and payment bills, characterizes the legal relationship (loan / gift / unjust enrichment), builds an evidence checklist, and lays out step-by-step remedies. Statute numbers must come from retrieval or are flagged as unverified; output includes a disclaimer. Supports wechat-parse JSON exports and WeChat payment bills (xlsx/csv) with a stdlib-only preprocessing script; case files live in `./legal-cases/`.
+A legal advisor: general legal consultation and dispute evidence analysis. Extracts evidence from chat records and payment bills, characterizes the legal relationship (loan / gift / unjust enrichment), builds an evidence checklist, and lays out step-by-step remedies. Statute numbers must come from retrieval or are flagged as unverified; output includes a disclaimer. Works with chat exports from any platform and mainstream payment bills such as WeChat Pay and Alipay (xlsx/csv, column names auto-detected), with a stdlib-only preprocessing script; case files live in `./legal-cases/`.
 
 ## Installation
 

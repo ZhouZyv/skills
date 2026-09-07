@@ -304,9 +304,9 @@ def read_bill(path):
         raise SystemExit(f"不支持的账单格式：{path}（支持 xlsx / csv）")
 
     header_i = next((i for i, r in enumerate(all_rows)
-                     if any("交易时间" in str(c) for c in r)), None)
+                     if any(x in str(c) for c in r for x in ("交易时间", "交易日期", "时间", "日期"))), None)
     if header_i is None:
-        raise SystemExit("账单中未找到表头行（需包含「交易时间」列）")
+        raise SystemExit("账单中未找到表头行（需包含「交易时间/日期」列）")
     header = [str(c).strip() for c in all_rows[header_i]]
     rows = []
     for r in all_rows[header_i + 1:]:
